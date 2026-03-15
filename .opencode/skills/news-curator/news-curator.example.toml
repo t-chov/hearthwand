@@ -1,0 +1,96 @@
+[app]
+timezone = "Asia/Tokyo"
+language = "ja"
+
+[storage]
+sqlite_path = "./news-curator.db"
+
+[defaults]
+max_items = 5
+fetch_timeout_sec = 15
+sort_by = ["published_date", "desc"]
+common_prompt = """
+入力された記事群から重要なニュースを選び、<viewpoints>に従って評価してください。
+webfetch ツールが使えない場合は @playwright を使って記事を取得してください。
+冗長な表現は避け、事実と論点を優先してください。
+
+<viewpoints>
+1. 記事の要点
+2. 記事の重要度(High, Middle, Low)
+3. 記事で解説されている内容が、今後どのように影響するか
+4. より詳細な情報を得たい場合に、どこを調べれば良いか
+</viewpoints>
+
+出力フォーマットは <format> に示したものを使うこと
+<format>
+```markdown
+# <記事のタイトル(日本語)>
+
+出典: [ドメイン名](URL)
+日付: YYYY-MM-DD
+
+## 1. 記事の要点
+
+- <記事の要点>
+- <記事の要点>
+- <記事の要点>
+...
+
+## 2. 記事の重要度
+
+**<重要度>**
+
+<重要度の理由>
+
+## 3. 今後の影響
+
+- <影響>
+- <影響>
+- <影響>
+...
+
+## 4. 詳細情報の調査先
+
+- <調査先>
+- <調査先>
+- <調査先>
+...
+```
+</format>
+"""
+
+[output]
+mode = "notion"
+
+[output.notion]
+database_id = "<YOUR_NOTION_DATABASE_ID>"
+title_field = "Title"
+category_field = "Category"
+url_field = "URL"
+published_date_field = "PublishedDate"
+
+[categories.global]
+category_name = "国際"
+enabled = true
+max_items = 5
+additional_prompt = """
+左派・右派の見解が割れているニュースについては、それぞれの立場がどう説明しているのかを出典とともに併記すること。
+"""
+news_sources = [
+    "https://edition.cnn.com/",
+    "https://moxie.foxnews.com/google-publisher/latest.xml",
+    "https://feeds.bbci.co.uk/news/rss.xml",
+    "https://www.lemonde.fr/rss/une.xml",
+    "https://www.aljazeera.com/xml/rss/all.xml",
+    "https://www.joongang.co.kr/",
+    "https://japan.hani.co.kr/rss",
+]
+# 任意カテゴリを追加可能:
+# [categories.<category_name>]
+# display_name = "表示名"
+# enabled = true
+# max_items = 5
+# additional_prompt = """
+# <追加の指示>
+# """
+# origins = ["https://example.com/feed.xml"]

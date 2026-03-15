@@ -1,3 +1,5 @@
-opencode.json
 .playwright-cli/
 .playwright/
+opencode.json
+news-curator.toml
+*.db
