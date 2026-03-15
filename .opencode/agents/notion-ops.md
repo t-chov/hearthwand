@@ -2,7 +2,7 @@
 name: notion-ops
 description: Notion MCP操作の専用エージェント (ページ読み取り・作成・更新・検索)
 tools:
-  - mcp__notion__*
+  'mcp__notion__*' : true
 ---
 
 # Notion Ops Agent
