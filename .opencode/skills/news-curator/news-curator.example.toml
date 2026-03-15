@@ -69,8 +69,8 @@ category_field = "Category"
 url_field = "URL"
 published_date_field = "PublishedDate"
 
-[categories.global]
-category_name = "国際"
+[categories.global-news]
+category_name = "国際ニュース"
 enabled = true
 max_items = 5
 additional_prompt = """
