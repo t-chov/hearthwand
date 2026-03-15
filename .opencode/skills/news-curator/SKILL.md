@@ -25,7 +25,7 @@ allowed-tools:
 4. SQLite を参照し、既に取得済みの記事を除外する
 5. 未取得の記事だけ本文を取得する
 6. `common_prompt` と `additional_prompt` を結合してカテゴリごとに記事を評価・編集する
-7. 各カテゴリにつき最も重要なニュースを、重要度順に最大 `max_items` 件まで採用する
+7. 2で指定したカテゴリで最も重要なニュースを、重要度順に最大 `max_items` 件(per category) まで採用する
 8. 出力先が `notion` の場合は Notion DB に登録する
 9. 実行結果を SQLite に記録する
 
