@@ -5,6 +5,7 @@ allowed-tools:
   - Bash
   - webfetch
   - mcp__notion*
+  - sqlite3
 ---
 
 # news-curator
@@ -35,7 +36,7 @@ allowed-tools:
 - `news-curator.toml`: ニュース取得・編集・出力設定
 - `news-curator.db`: 取得済み記事、実行履歴、出力履歴を保持する SQLite DB
 
-## Output
+## Output(完了条件)
 
 - カテゴリごとに編集済みの Markdown コンテンツ
 - Notion database へのページ登録

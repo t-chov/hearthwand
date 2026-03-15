@@ -3,3 +3,4 @@
 opencode.json
 news-curator.toml
 *.db
+*.pyc

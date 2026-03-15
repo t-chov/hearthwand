@@ -3,7 +3,7 @@ timezone = "Asia/Tokyo"
 language = "ja"
 
 [storage]
-sqlite_path = "./news-curator.db"
+sqlite_path = ".opencode/skills/news-curator/news-curator.db"
 
 [defaults]
 days=1
