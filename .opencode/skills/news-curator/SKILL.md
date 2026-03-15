@@ -20,7 +20,7 @@ allowed-tools:
 
 1. `news-curator.toml` を読む
 2. 指定されたカテゴリを走査する
-  - 第一引数でカテゴリが指定されていれば指定のカテゴリを、そうでなければ全てのカテゴリを対象とする
+  - 第一引数でカテゴリが指定されていれば指定のカテゴリのみを、そうでなければ全てのカテゴリを対象とする
 3. 各カテゴリの `news_sources` から記事候補を取得する
 4. SQLite を参照し、既に取得済みの記事を除外する
 5. 未取得の記事だけ本文を取得する
@@ -139,6 +139,8 @@ URL は可能なら以下を行ってから比較する。
 
 - まず `webfetch` を使う
 - `webfetch` が失敗する、または記事本文が取得できない場合は `Bash` で `playwright` を利用して取得してよい
+  - `playwright` を使う場合は、`playwright-cli` を利用して記事を取得する
+  - `@playwright-ops` エージェントを利用し、 playwright を操作すること
 
 ### Timeouts
 
@@ -181,6 +183,8 @@ URL は可能なら以下を行ってから比較する。
 - `published_date_field`
 
 Notion 登録後は `curated_items.exported_to_notion = 1` を記録し、取得できるなら `notion_page_id` を保存する。
+
+メインセッションのトークン消費量削減のため、 @notion-ops エージェントを利用し、notion を操作すること。
 
 ## Description of settings
 
