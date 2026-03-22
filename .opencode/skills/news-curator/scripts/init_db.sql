@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS curated_items (
   run_id INTEGER NOT NULL,
   article_id INTEGER NOT NULL,
   category_key TEXT NOT NULL,
-  rank_in_category INTEGER,
+  priority TEXT,
   exported_to_notion INTEGER NOT NULL DEFAULT 0 CHECK (exported_to_notion IN (0, 1)),
   notion_page_id TEXT,
 
@@ -88,8 +88,8 @@ CREATE TABLE IF NOT EXISTS curated_items (
   UNIQUE(run_id, article_id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_curated_items_run_rank
-  ON curated_items(run_id, rank_in_category);
+CREATE INDEX IF NOT EXISTS idx_curated_items_run_priority
+  ON curated_items(run_id, priority);
 
 CREATE TABLE IF NOT EXISTS schema_meta (
   key TEXT PRIMARY KEY,

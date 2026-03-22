@@ -7,7 +7,6 @@ sqlite_path = ".opencode/skills/news-curator/news-curator.db"
 
 [defaults]
 days=1
-max_items = 5
 fetch_timeout_sec = 15
 sort_by = ["published_date", "desc"]
 common_prompt = """
@@ -73,7 +72,6 @@ published_date_field = "PublishedDate"
 [categories.global-news]
 category_name = "国際ニュース"
 enabled = true
-max_items = 5
 additional_prompt = """
 左派・右派の見解が割れているニュースについては、それぞれの立場がどう説明しているのかを出典とともに併記すること。
 """
@@ -90,7 +88,6 @@ news_sources = [
 # [categories.<category_name>]
 # display_name = "表示名"
 # enabled = true
-# max_items = 5
 # additional_prompt = """
 # <追加の指示>
 # """
