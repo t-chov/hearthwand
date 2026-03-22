@@ -27,20 +27,26 @@ allowed-tools:
 4. SQLite を参照し、既に取得済みの記事を除外する
 5. 未取得の記事だけ本文を取得する
 6. `common_prompt` と `additional_prompt` を結合してカテゴリごとに記事を評価・編集する
-7. 2で指定したカテゴリで最も重要なニュースを、重要度順に最大 `max_items` 件(per category) まで採用する
-8. 出力先が `notion` の場合は Notion DB に登録する
-9. 実行結果を SQLite に記録する
+7. 重要なニュースであれば Notion DB に登録する
+8. 実行結果を SQLite に記録する
 
 ## Input files
 
 - `news-curator.toml`: ニュース取得・編集・出力設定
+  - `example.toml` はサンプル設定なので、無視すること
 - `news-curator.db`: 取得済み記事、実行履歴、出力履歴を保持する SQLite DB
 
 ## Output(完了条件)
 
 - カテゴリごとに編集済みの Markdown コンテンツ
 - Notion database へのページ登録
+- **登録検証（必須）**: 以下の手順で全件の登録成功を確認すること。省略は禁止。
+  1. `notion-create-pages` の戻り値に含まれる各ページの `id` を控える
+  2. 各ページに対し `notion-fetch` を実行し、タイトル,プロパティ,フォーマットが期待どおりであることを確認する
+  3. 検証に失敗したページがあれば、そのページのみ再作成してから再度検証する
+  4. 全件の検証が完了するまで「Notion登録完了」と報告してはならない
 - SQLite への履歴保存
+  - `curated_items.notion_page_id` には検証済みの実在する page_id のみを記録する
 
 ## SQLite policy
 
@@ -105,7 +111,7 @@ allowed-tools:
 - `run_id`
 - `article_id`
 - `category_key`
-- `rank_in_category`
+- `priority`
 - `exported_to_notion`
 - `notion_page_id`
 
@@ -140,7 +146,7 @@ URL は可能なら以下を行ってから比較する。
 ### Preferred tool
 
 - まず `webfetch` を使う
-- `webfetch` が失敗する、または記事本文が取得できない場合は `Bash` で `playwright` を利用して取得してよい
+- `webfetch` が 4XX エラーで失敗する、または記事本文が取得できない場合は `playwright` を利用して取得する
   - `playwright` を使う場合は、`playwright-cli` を利用して記事を取得する
   - `@playwright-ops` エージェントを利用し、 playwright を操作すること
 
@@ -151,15 +157,13 @@ URL は可能なら以下を行ってから比較する。
 
 ## Selection policy
 
-カテゴリごとに以下を行う。
+カテゴリごとに以下を行う。各処理は独立なので、sub agent を起動して実施すること。
 
 1. `news_sources` の候補記事を収集
 2. 既読を除外
 3. 新規記事を時系列順に並べる
 4. `common_prompt` と `additional_prompt` を用いて評価・編集
-5. 記事の重要度と新規性を見て最大 `max_items` 件を採用
 
-`sort_by` は候補記事の並び順にのみ使う。
 最終採用は prompt による評価を優先してよい。
 
 ## Prompt composition
@@ -176,17 +180,34 @@ URL は可能なら以下を行ってから比較する。
 
 出力先が `notion` のときは `output.notion` を参照する。
 
-利用する主な field:
+### ページ作成に使う API
 
-- `database_id`
-- `title_field`
-- `category_field`
-- `url_field`
-- `published_date_field`
+**`notion-create-pages`** を使用する（`notion-create-page` ではない）。
 
-Notion 登録後は `curated_items.exported_to_notion = 1` を記録し、取得できるなら `notion_page_id` を保存する。
+- `parent.data_source_id`: データベースの data_source ID（`notion-fetch` でデータベースを取得すると `<data-source url="collection://...">` で確認できる）
+- プロパティ名は Notion スキーマ上の名前をそのまま使う。**ただし URL 型プロパティは `userDefined:` プレフィクスが必要**（例: `userDefined:URL`）
+- 日付型プロパティは展開形式を使う（例: `date:PublishedDate:start`, `date:PublishedDate:is_datetime`）
 
-メインセッションのトークン消費量削減のため、 @notion-ops エージェントを利用し、notion を操作すること。
+### プロパティマッピング
+
+`news-curator.toml` の field 名と Notion スキーマの対応:
+
+| toml の field | Notion プロパティ名 |
+|---|---|
+| `title_field` | そのまま（例: `Title`） |
+| `category_field` | そのまま（例: `Category`） |
+| `url_field` | `userDefined:` + 値（例: `userDefined:URL`） |
+| `published_date_field` | `date:` + 値 + `:start`（例: `date:PublishedDate:start`） |
+
+### 登録後の処理
+
+Notion 登録後は `curated_items.exported_to_notion = 1` を記録し、`notion_page_id` を保存する。
+`notion_page_id` は `notion-create-pages` の戻り値から取得した検証済みの ID のみを保存する。
+
+### @notion-ops エージェントは使用しない
+
+過去に @notion-ops エージェントへの委任で、存在しない API を呼び出して無音で失敗するケースがあった。
+Notion 操作は **メインセッションで直接** `mcp__notion__notion-create-pages` / `mcp__notion__notion-fetch` を呼ぶこと。
 
 ## Description of settings
 
@@ -218,7 +239,6 @@ Notion 登録後は `curated_items.exported_to_notion = 1` を記録し、取得
 
 - `category_name`: 表示用カテゴリ名
 - `enabled`: 有効/無効
-- `max_items`: そのカテゴリ専用の最大採用件数
 - `additional_prompt`: カテゴリ固有の追加指示
 - `news_sources`: 取得元 URL 一覧
 
