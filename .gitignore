@@ -5,3 +5,4 @@ news-curator.toml
 *.db
 *.pyc
 .DS_Store
+__tmp/
