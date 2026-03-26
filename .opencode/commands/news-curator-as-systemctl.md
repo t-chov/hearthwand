@@ -9,4 +9,5 @@ description: news-curator を定期実行する設定ファイルを出力する
 
 `__tmp` ディレクトリがなければその中に作成すること。
 
-書式は systemd の書式に従い、 `WorkingDirectory` は `pwd` に設定すること。
+- 書式は systemd の書式に従い、 `WorkingDirectory` は `pwd` に設定すること
+- ExecStart は `opencode run` でコマンドを実行するようにすること
