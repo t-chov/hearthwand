@@ -6,7 +6,7 @@ language = "ja"
 sqlite_path = ".opencode/skills/news-curator/news-curator.db"
 
 [defaults]
-days=1
+hours=24
 fetch_timeout_sec = 15
 sort_by = ["published_date", "desc"]
 common_prompt = """

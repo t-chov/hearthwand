@@ -18,7 +18,7 @@ description: Evaluate unread news candidates from configured sources with SQLite
 
 1. command から渡された対象カテゴリを確認する
 2. そのカテゴリの `news_sources` ごとに記事候補を取得する
-  - 過去 `days` 日以内に投稿された記事のみを対象にする
+  - 過去 `hours` 時間以内に投稿された記事のみを対象にする
 3. SQLite を参照し、既に取得済みの記事を除外する
 4. 未取得の記事だけ本文を取得する
 5. `common_prompt` と `additional_prompt` を結合して記事を評価・編集する
