@@ -1,16 +1,13 @@
 ---
 name: news-curator
-description: Curate news articles by category from configured sources, avoid revisiting already fetched pages via SQLite, and publish selected summaries to Notion.
-allowed-tools:
-  - Bash
-  - webfetch
-  - mcp__notion*
-  - sqlite3
+description: Evaluate unread news candidates from configured sources with SQLite deduplication and produce Notion-ready curation results.
 ---
 
 # news-curator
 
-`news-curator.toml` に従ってニュース記事を収集・重複排除・要約し、カテゴリごとに Notion へ出力する。
+`news-curator.toml` に従って、カテゴリ内の各 `news_sources` から新着記事候補を評価し、採用可否と Notion 登録用の内容を決める。
+
+キュレーション全体の起動は command から行う。この skill は、**各カテゴリ・各ニュースソースの評価ロジック** を担当する。
 
 この skill は、**SQLite を使って取得済み記事を記録し、一度取得したページを再度処理しない**。
 同一記事の再訪防止は `guid` / `canonical_url` / 正規化URLハッシュ / 内容ハッシュを用いて行う。
@@ -19,16 +16,20 @@ allowed-tools:
 
 この skill は以下を行う。
 
-1. `news-curator.toml` を読む
-2. 指定されたカテゴリを走査する
-  - 第一引数でカテゴリが指定されていれば指定のカテゴリのみを、そうでなければ全てのカテゴリを対象とする
-3. 各カテゴリの `news_sources` から記事候補を取得する
-  - 過去 `days` 日以内に投稿された記事のみを取得する
-4. SQLite を参照し、既に取得済みの記事を除外する
-5. 未取得の記事だけ本文を取得する
-6. `common_prompt` と `additional_prompt` を結合してカテゴリごとに記事を評価・編集する
-7. 重要なニュースであれば Notion DB に登録する
-8. 実行結果を SQLite に記録する
+1. command から渡された対象カテゴリを確認する
+2. そのカテゴリの `news_sources` ごとに記事候補を取得する
+  - 過去 `hours` 時間以内に投稿された記事のみを対象にする
+3. SQLite を参照し、既に取得済みの記事を除外する
+4. 未取得の記事だけ本文を取得する
+5. `common_prompt` と `additional_prompt` を結合して記事を評価・編集する
+6. 重要なニュースだけを採用候補として返し、Notion 登録用のデータを組み立てる
+7. 評価結果とスキップ理由を SQLite に記録する
+
+## Command boundary
+
+- command は実行入口を担当する
+- command はカテゴリ選択、全体実行、sub agent の起動、Notion 検証完了までのオーケストレーションを担当する
+- skill は各カテゴリ・各ニュースソースの候補収集、重複排除、本文取得、評価、採否判定を担当する
 
 ## Input files
 
@@ -38,9 +39,10 @@ allowed-tools:
 
 ## Output(完了条件)
 
-- カテゴリごとに編集済みの Markdown コンテンツ
-- Notion database へのページ登録
-- **登録検証（必須）**: 以下の手順で全件の登録成功を確認すること。省略は禁止。
+- カテゴリごとの採用候補と編集済み Markdown コンテンツ
+- Notion database へ登録可能なプロパティセット
+- command から利用できる検証前の page candidate 情報
+- **登録検証（必須）**: Notion 登録後の以下の検証は command 側で必ず実施すること。省略は禁止。
   1. `notion-create-pages` の戻り値に含まれる各ページの `id` を控える
   2. 各ページに対し `notion-fetch` を実行し、タイトル,プロパティ,フォーマットが期待どおりであることを確認する
   3. 検証に失敗したページがあれば、そのページのみ再作成してから再度検証する
@@ -157,7 +159,7 @@ URL は可能なら以下を行ってから比較する。
 
 ## Selection policy
 
-カテゴリごとに以下を行う。各処理は独立なので、sub agent を起動して実施すること。
+カテゴリごとに以下を行う。各処理は独立なので、command 側で sub agent を起動して実施してよい。
 
 1. `news_sources` の候補記事を収集
 2. 既読を除外
@@ -207,7 +209,7 @@ Notion 登録後は `curated_items.exported_to_notion = 1` を記録し、`notio
 ### @notion-ops エージェントは使用しない
 
 過去に @notion-ops エージェントへの委任で、存在しない API を呼び出して無音で失敗するケースがあった。
-Notion 操作は **メインセッションで直接** `mcp__notion__notion-create-pages` / `mcp__notion__notion-fetch` を呼ぶこと。
+Notion 操作は **command を実行しているメインセッションで直接** `mcp__notion__notion-create-pages` / `mcp__notion__notion-fetch` を呼ぶこと。
 
 ## Description of settings
 
@@ -255,7 +257,6 @@ Notion 操作は **メインセッションで直接** `mcp__notion__notion-crea
 ```text
 .
 ├── SKILL.md
-├── news-curator.toml
 ├── news-curator.db
 ├── scripts/
 │   ├── init_db.sql
