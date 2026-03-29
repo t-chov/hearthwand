@@ -13,6 +13,8 @@
 - `src/index.ts`: bot の起動と interaction 処理
 - `src/register-commands.ts`: ギルド向けスラッシュコマンド登録
 - `src/commands/ping.ts`: `/ping` コマンド定義と応答処理
+- `src/post-news.ts`: Embed JSON を読んで Discord チャンネルへ投稿
+- `src/embed.ts`: Embed JSON の検証と Discord Embed 変換
 - `test/ping.test.ts`: `/ping` の単体テスト
 
 ## セットアップ手順
@@ -58,6 +60,7 @@
 DISCORD_TOKEN=your-bot-token
 DISCORD_CLIENT_ID=123456789012345678
 DISCORD_GUILD_ID=987654321098765432
+DISCORD_CHANNEL_ID=123456789012345678
 ```
 
 ## ローカル実行手順
@@ -74,6 +77,7 @@ pnpm dev
 - `pnpm install`: 依存関係をインストールする
 - `pnpm register`: `DISCORD_GUILD_ID` のサーバーに `/ping` を登録する
 - `pnpm dev`: bot を起動する
+- `pnpm post-news -- <embed-json-path>`: Embed JSON を `DISCORD_CHANNEL_ID` のチャンネルへ投稿する
 
 `pnpm dev` 実行後に `Logged in as ...` が表示されればログイン成功です。
 
@@ -104,3 +108,58 @@ pnpm build
 - `pnpm build`: TypeScript をビルドする
 
 単体テストは Discord API を叩きません。実際の slash command 動作確認は、Discord 上での手動確認が必要です。
+
+## Notion から Embed JSON を作る
+
+Notion ページの内容を Discord に流したい場合は、opencode の `/notion-to-discord-embed` コマンドを使います。これは Markdown 全体を Discord Embed に直接変換するのではなく、Embed の主要要素に分解した JSON を出力します。
+
+```bash
+opencode run /notion-to-discord-embed https://www.notion.so/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+出力先を指定する場合:
+
+```bash
+opencode run /notion-to-discord-embed https://www.notion.so/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx __tmp/sample-embed.json
+```
+
+出力 JSON の基本形は以下です。
+
+```json
+{
+  "title": "記事タイトル",
+  "url": "https://www.notion.so/...",
+  "articleUrl": "https://example.com/article",
+  "description": "Discord Embed 向けに整えた短い要約。",
+  "fields": [
+    {
+      "name": "カテゴリ",
+      "value": "国際ニュース",
+      "inline": true
+    }
+  ]
+}
+```
+
+このコマンドは Notion ページのタイトル、要約、カテゴリ、ニュースソース一覧を JSON に分解して保存します。Discord へ投稿する処理は別途この JSON を読んで組み立てる前提です。
+
+## Embed JSON を Discord に投稿する
+
+`/notion-to-discord-embed` で作った JSON は、`post-news` コマンドで Discord に投稿できます。
+
+```bash
+cd discord-bot
+pnpm post-news ../__tmp/sample-embed.json
+```
+
+このコマンドは以下を前提にします。
+
+- `DISCORD_TOKEN` が設定されている
+- `DISCORD_CHANNEL_ID` に投稿先チャンネル ID が入っている
+- 指定 JSON が `title`, `description`, `fields` を持っている
+
+Embed のリンクは次の優先順で設定します。
+
+- `articleUrl` があれば記事 URL を Embed 本体のリンクに使う
+- `articleUrl` がなければ `url` を使う
+- `url` があれば footer に Notion URL を残す

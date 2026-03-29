@@ -37,11 +37,13 @@
 - `DISCORD_TOKEN`
 - `DISCORD_CLIENT_ID`
 - `DISCORD_GUILD_ID`
+- `DISCORD_CHANNEL_ID`
 
 ## Commands
 
 - 開発起動: `pnpm dev`
 - コマンド登録: `pnpm register`
+- ニュース投稿: `pnpm post-news <embed-json-path>`
 - テスト: `pnpm test`
 - 整形/検査: `pnpm check`
 
