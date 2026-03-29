@@ -1,5 +1,14 @@
 import { EmbedBuilder } from "discord.js";
 
+const EMBED_LIMITS = {
+  title: 256,
+  description: 4096,
+  fieldName: 256,
+  fieldValue: 1024,
+  fieldCount: 25,
+  totalCharacters: 6000,
+} as const;
+
 export type DiscordEmbedFieldInput = {
   name: string;
   value: string;
@@ -13,6 +22,56 @@ export type DiscordEmbedInput = {
   description: string;
   fields: DiscordEmbedFieldInput[];
 };
+
+function assertMaxLength(value: string, limit: number, fieldName: string) {
+  if (value.length > limit) {
+    throw new Error(
+      `Embed JSON field \`${fieldName}\` exceeds Discord limit (${value.length}/${limit}).`,
+    );
+  }
+}
+
+function validateDiscordEmbedInput(input: DiscordEmbedInput) {
+  const fields = input.url
+    ? [
+        ...input.fields,
+        {
+          name: "Notion URL",
+          value: input.url,
+          inline: false,
+        },
+      ]
+    : input.fields;
+
+  assertMaxLength(input.title, EMBED_LIMITS.title, "title");
+  assertMaxLength(input.description, EMBED_LIMITS.description, "description");
+
+  if (fields.length > EMBED_LIMITS.fieldCount) {
+    throw new Error(
+      `Embed JSON field \`fields\` exceeds Discord limit (${fields.length}/${EMBED_LIMITS.fieldCount}).`,
+    );
+  }
+
+  const totalCharacters = fields.reduce((sum, field, index) => {
+    assertMaxLength(
+      field.name,
+      EMBED_LIMITS.fieldName,
+      `fields[${index}].name`,
+    );
+    assertMaxLength(
+      field.value,
+      EMBED_LIMITS.fieldValue,
+      `fields[${index}].value`,
+    );
+    return sum + field.name.length + field.value.length;
+  }, input.title.length + input.description.length);
+
+  if (totalCharacters > EMBED_LIMITS.totalCharacters) {
+    throw new Error(
+      `Embed JSON content exceeds Discord total character limit (${totalCharacters}/${EMBED_LIMITS.totalCharacters}).`,
+    );
+  }
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -76,6 +135,8 @@ export function parseDiscordEmbedInput(value: unknown): DiscordEmbedInput {
 }
 
 export function createDiscordEmbed(input: DiscordEmbedInput) {
+  validateDiscordEmbedInput(input);
+
   const fields = input.url
     ? [
         ...input.fields,

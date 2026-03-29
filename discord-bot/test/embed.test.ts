@@ -64,4 +64,29 @@ describe("createDiscordEmbed", () => {
       },
     ]);
   });
+
+  it("throws a clear error when description exceeds Discord limit", () => {
+    expect(() =>
+      createDiscordEmbed({
+        title: "記事タイトル",
+        description: "a".repeat(4097),
+        fields: [],
+      }),
+    ).toThrow("description");
+  });
+
+  it("throws when the appended Notion URL field exceeds field count limit", () => {
+    expect(() =>
+      createDiscordEmbed({
+        title: "記事タイトル",
+        url: "https://www.notion.so/example",
+        description: "要約です。",
+        fields: Array.from({ length: 25 }, (_, index) => ({
+          name: `項目${index}`,
+          value: "値",
+          inline: false,
+        })),
+      }),
+    ).toThrow("fields");
+  });
 });
