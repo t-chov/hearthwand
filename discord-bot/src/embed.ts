@@ -76,19 +76,26 @@ export function parseDiscordEmbedInput(value: unknown): DiscordEmbedInput {
 }
 
 export function createDiscordEmbed(input: DiscordEmbedInput) {
+  const fields = input.url
+    ? [
+        ...input.fields,
+        {
+          name: "Notion URL",
+          value: input.url,
+          inline: false,
+        },
+      ]
+    : input.fields;
+
   const embed = new EmbedBuilder()
     .setTitle(input.title)
     .setDescription(input.description)
-    .addFields(input.fields);
+    .addFields(fields);
 
   if (input.articleUrl) {
     embed.setURL(input.articleUrl);
   } else if (input.url) {
     embed.setURL(input.url);
-  }
-
-  if (input.url) {
-    embed.setFooter({ text: input.url });
   }
 
   return embed.toJSON();

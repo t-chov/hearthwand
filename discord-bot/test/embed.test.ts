@@ -50,6 +50,18 @@ describe("createDiscordEmbed", () => {
     });
 
     expect(embed.url).toBe("https://example.com/article");
-    expect(embed.footer?.text).toBe("https://www.notion.so/example");
+    expect(embed.footer).toBeUndefined();
+    expect(embed.fields).toEqual([
+      {
+        name: "カテゴリ",
+        value: "国際ニュース",
+        inline: true,
+      },
+      {
+        name: "Notion URL",
+        value: "https://www.notion.so/example",
+        inline: false,
+      },
+    ]);
   });
 });
