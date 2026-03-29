@@ -11,3 +11,4 @@ description: news-curator を定期実行する設定ファイルを出力する
 
 - 書式は systemd の書式に従い、 `WorkingDirectory` は `pwd` に設定すること
 - ExecStart は `opencode run` でコマンドを実行するようにすること
+    - opencode のパスは `which opencode` に従う
