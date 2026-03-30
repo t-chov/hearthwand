@@ -12,18 +12,8 @@ description: Notion のふりかえり材料を読み、短い weekly retrospect
 1. `@config/retrospective.toml` を読み、`sources.database_url` を確認する
 2. `Daily` タグのついた URL を `notion-fetch` で取得する
 3. 取得した内容と `prompt.system_prompt` を使って、@.opencode/skills/retrospective/SKILL.md の方針でふりかえりを作る
-4. 結果は `Weekly` タグのついたページのうち、指定期間に該当するページに書き込む
+4. 結果は `Weekly` タグのついたページのうち、指定期間に該当するNotionページに書き込む
 
-出力条件:
-
-- 日本語で出力する
-- セクションは次の 5 つに限定する
-  - 続けること
-  - やめること
-  - 変えること
-  - 来週の If-Then ルール
-  - 全体的なフィードバック(文章)
-- `来週の If-Then ルール` は 3 個以内にする
-- 出典として使ったページ名を最後に列挙してよい
+出力条件については Skill および設定ファイル を参照すること
 
 対象期間: $ARGUMENTS

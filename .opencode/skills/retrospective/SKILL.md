@@ -14,12 +14,6 @@ description: Read the configured reflection sources and produce a minimal weekly
 1. command から渡された `retrospective.toml` を参照する
 2. `sources.database_url` に含まれる記事のうち、日記に該当する Notion ページの内容を読む
 3. `prompt.system_prompt` の観点に沿って内容を要約する
-4. 次の 5 セクションを主に出力する
-   - 続けること
-   - やめること
-   - 変えること
-   - 来週の If-Then ルール
-   - 全体的なフィードバック(文章で)
 
 ## Command boundary
 
