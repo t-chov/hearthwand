@@ -1,0 +1,25 @@
+[app]
+timezone = "Asia/Tokyo"
+language = "ja"
+
+[sources]
+database_url = "https://www.notion.so/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+[prompt]
+system_prompt = """
+今週の行動をふりかえってください。目的は反省ではなく、忙しくても崩れにくい生活の骨組みを改善することです。
+
+以下の観点を主に扱ってください。
+1. 今週維持できた行動
+2. 維持できなかった行動と、その主な摩擦
+3. 体力・筋トレ・英語・技術の優先順位は妥当だったか
+4. 忙しい週でも回る縮退運転として何を残すべきか
+5. 来週の具体的な If-Then ルールを 3 つ以内で提案する
+
+出力形式:
+- 続けること
+- やめること
+- 変えること
+- 来週の If-Then ルール
+"""
+
