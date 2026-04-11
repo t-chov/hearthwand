@@ -5,7 +5,7 @@ description: Notion のふりかえり材料を読み、短い weekly retrospect
 @.opencode/skills/retrospective/SKILL.md
 @config/retrospective.toml
 
-`retrospective.toml` に従って、ふりかえり用の Notion ページを読み、表示専用の短いふりかえりを作成する。
+`retrospective.toml` に従って、ふりかえり用の Notion ページを読み、短いふりかえりを作成する。
 
 実行手順:
 
