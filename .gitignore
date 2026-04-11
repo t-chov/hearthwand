@@ -3,6 +3,7 @@
 opencode.json
 news-curator.toml
 retrospective.toml
+support-foreign-language-reading.toml
 *.db
 *.pyc
 .DS_Store
